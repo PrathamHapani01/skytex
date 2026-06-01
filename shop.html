@@ -11,6 +11,7 @@
   <header class="site-header">
     <div class="container site-header__inner">
       <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="Sky Tex" class="logo__img" />
         <span>Sky Tex</span>
       </a>
       <nav class="nav">
@@ -32,6 +33,16 @@
         <option value="Cotton">Cotton</option>
         <option value="Silk">Silk</option>
         <option value="Wool">Wool</option>
+        <option value="Tapeta">Tapeta</option>
+      </select>
+      <select id="colour-filter" class="filter-select">
+        <option value="">All Colours</option>
+        <option value="Beige">Beige</option>
+        <option value="White">White</option>
+        <option value="Champagne">Champagne</option>
+        <option value="Grey">Grey</option>
+        <option value="Multi">Multi</option>
+        <option value="Navy">Navy</option>
       </select>
       <select id="price-filter" class="filter-select">
         <option value="">All Prices</option>
@@ -53,6 +64,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       const grid = document.getElementById("shop-grid");
       const materialFilter = document.getElementById("material-filter");
+      const colourFilter = document.getElementById("colour-filter");
       const priceFilter = document.getElementById("price-filter");
 
       function renderProducts(products) {
@@ -72,10 +84,15 @@
       function filterProducts() {
         let filtered = [...PRODUCTS];
         const material = materialFilter.value;
+        const colour = colourFilter.value;
         const price = priceFilter.value;
 
         if (material) {
           filtered = filtered.filter(p => p.material === material);
+        }
+
+        if (colour) {
+          filtered = filtered.filter(p => p.colour === colour);
         }
 
         if (price === 'low') {
@@ -90,6 +107,7 @@
       }
 
       materialFilter.addEventListener('change', filterProducts);
+      colourFilter.addEventListener('change', filterProducts);
       priceFilter.addEventListener('change', filterProducts);
 
       // Check URL params for initial filter

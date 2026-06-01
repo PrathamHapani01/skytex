@@ -11,6 +11,7 @@
   <header class="site-header">
     <div class="container site-header__inner">
       <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="Sky Tex" class="logo__img" />
         <span>Sky Tex</span>
       </a>
       <nav class="nav">
@@ -46,10 +47,8 @@
 
       if (product && detailContainer) {
         const specsHtml = Object.entries(product.specifications || {}).map(([key, value]) => `
-          <li>
-            <span class="spec-label">${key}</span>
-            <span class="spec-value">${value}</span>
-          </li>
+          <dt class="spec-label">${key}</dt>
+          <dd class="spec-value">${value}</dd>
         `).join('');
 
         detailContainer.innerHTML = `
@@ -75,7 +74,7 @@
               
               <div class="product-info__specs">
                 <h4>Fabric Specifications</h4>
-                <ul class="spec-list">${specsHtml}</ul>
+                <dl class="spec-list">${specsHtml}</dl>
               </div>
               
               <a href="${whatsappProductLink(product.name, product.price)}" target="_blank" class="btn btn--whatsapp btn--block btn--large">

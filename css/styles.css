@@ -16,7 +16,7 @@
   --shadow: 0 8px 32px rgba(44, 40, 36, 0.08);
   --shadow-lg: 0 16px 48px rgba(44, 40, 36, 0.12);
   --max: 1200px;
-  --hero-img: url("https://tse3.mm.bing.net/th/id/OIP.m72fAG0ejjomHD1wK5WvbQHaFD?rs=1&pid=ImgDetMain&o=7&rm=3");
+  --hero-img: url("https://static.vecteezy.com/system/resources/previews/044/860/698/non_2x/gray-world-map-illustration-design-vector.jpg");
 }
 
 *,
@@ -316,12 +316,12 @@ p { margin: 0 0 1em; }
   inset: 0;
   /* combine a soft blue tint with the existing dark vignette */
   background: linear-gradient(
-      180deg,
-      rgba(3, 73, 162, 0.18) 0%,
-      rgba(3, 73, 162, 0.22) 35%,
-      rgba(30, 26, 22, 0.45) 60%,
-      rgba(30, 26, 22, 0.7) 100%
-    );
+  180deg,
+    rgba(3, 73, 162, 0.4) 0%,
+    rgba(18, 48, 88, 0.5) 35%,
+    rgba(20, 18, 16, 0.8) 80%,
+    rgba(28, 28, 28, 0.95) 100%
+);
   pointer-events: none;
 }
 
@@ -1143,7 +1143,14 @@ p { margin: 0 0 1em; }
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  object-fit: cover;
+  background: #8b7355;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 500;
   flex-shrink: 0;
 }
 
@@ -1588,34 +1595,22 @@ p { margin: 0 0 1em; }
 }
 
 .spec-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  gap: 1rem 2rem;
+  margin-top: 1.5rem;
 }
 
-.spec-list li {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.spec-list li:last-child {
-  border-bottom: none;
-}
-
-.spec-label {
+.spec-list dt {
   color: var(--text-muted);
-  font-weight: 500;
+  font-size: 0.9rem;
 }
 
-.spec-value {
+.spec-list dd {
   font-weight: 500;
   color: var(--text);
+  margin-left: 0;
+  font-size: 0.95rem;
 }
 
 .product-info__desc {
