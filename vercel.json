@@ -4,6 +4,34 @@
     {
       "source": "/api/(.*)",
       "destination": "https://skytex-api.onrender.com/api/$1"
+    },
+    {
+      "source": "/shop",
+      "destination": "/shop.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact.html"
+    },
+    {
+      "source": "/collections",
+      "destination": "/collections.html"
+    },
+    {
+      "source": "/swatches",
+      "destination": "/swatches.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/product",
+      "destination": "/product.html"
     }
   ],
   "headers": [
