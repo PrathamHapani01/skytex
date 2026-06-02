@@ -11,6 +11,10 @@ from admin import router as admin_router
 # Load environment variables
 load_dotenv()
 
+from seed import seed_database
+if os.getenv("DATABASE_URL"):
+    seed_database()
+
 # Create tables
 Base.metadata.create_all(bind=engine)
 
