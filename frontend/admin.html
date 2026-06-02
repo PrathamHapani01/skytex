@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Sky Tex</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: #f7f4ef; color: #2c2824; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .hidden { display: none !important; }
+    
+    /* Login styles */
+    .login-container { max-width: 400px; margin: 100px auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .login-container h1 { margin-bottom: 20px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+    .btn { background: #2c2824; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; }
+    .btn:hover { background: #1a1714; }
+    .error { color: #dc3545; margin-top: 10px; font-size: 14px; }
+    
+    /* Dashboard styles */
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .dashboard-header h1 { font-size: 28px; }
+    .logout-btn { background: #dc3545; padding: 8px 16px; }
+    .logout-btn:hover { background: #c82333; }
+    
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab { padding: 10px 20px; background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+    .tab.active { background: #2c2824; color: white; border-color: #2c2824; }
+    
+    .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background: #f7f4ef; font-weight: 500; }
+    .actions { display: flex; gap: 8px; }
+    .btn-sm { padding: 6px 12px; font-size: 14px; width: auto; }
+    .btn-edit { background: #007bff; }
+    .btn-edit:hover { background: #0056b3; }
+    .btn-delete { background: #dc3545; }
+    .btn-delete:hover { background: #c82333; }
+    .btn-add { background: #28a745; width: auto; margin-bottom: 20px; }
+    .btn-add:hover { background: #218838; }
+    
+    /* Modal styles */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+    .modal.active { display: flex; justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 30px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .close { background: none; border: none; font-size: 24px; cursor: pointer; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; }
+    
+    .loading { text-align: center; padding: 40px; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #2c2824; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Login Section -->
+    <div id="login-section" class="login-container">
+      <h1>Admin Login</h1>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+        <button type="submit" class="btn">Login</button>
+        <div id="login-error" class="error"></div>
+      </form>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="hidden">
+      <div class="dashboard-header">
+        <h1>Sky Tex Admin Dashboard</h1>
+        <button id="logout-btn" class="btn logout-btn">Logout</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="products">Products</button>
+        <button class="tab" data-tab="contacts">Contact Messages</button>
+      </div>
+
+      <!-- Products Tab -->
+      <div id="products-tab" class="section">
+        <button id="add-product-btn" class="btn btn-add">Add New Product</button>
+        <div id="products-loading" class="loading hidden">
+          <div class="spinner"></div>
+          <p>Loading products...</p>
+        </div>
+        <div id="products-table-container">
+          <table id="products-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Material</th>
+                <th>Colour</th>
+                <th>Price</th>
+                <th>GSM</th>
+                <th>Width</th>
+                <th>Bestseller</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Contacts Tab -->
+      <div id="contacts-tab" class="section hidden">
+        <div id="contacts-loading" class="loading hidden">
+          <div class="spinner"></div>
+          <p>Loading messages...</p>
+        </div>
+        <div id="contacts-table-container">
+          <table id="contacts-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Subject</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="contacts-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Modal -->
+  <div id="product-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Add Product</h2>
+        <button class="close" id="close-modal">&times;</button>
+      </div>
+      <form id="product-form">
+        <input type="hidden" id="product-id" />
+        <div class="form-group">
+          <label for="product-name">Name *</label>
+          <input type="text" id="product-name" required />
+        </div>
+        <div class="form-group">
+          <label for="product-description">Description *</label>
+          <textarea id="product-description" rows="3" required></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="product-price">Price *</label>
+            <input type="number" step="0.01" id="product-price" required />
+          </div>
+          <div class="form-group">
+            <label for="product-material">Material *</label>
+            <input type="text" id="product-material" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="product-colour">Colour *</label>
+            <input type="text" id="product-colour" required />
+          </div>
+          <div class="form-group">
+            <label for="product-gsm">GSM *</label>
+            <input type="text" id="product-gsm" required placeholder="e.g., 180 gsm" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="product-width">Width *</label>
+          <input type="text" id="product-width" required placeholder="e.g., 150 cm" />
+        </div>
+        <div class="form-group">
+          <label>Product Images *</label>
+          <div style="margin-bottom: 10px;">
+            <label style="font-weight: normal; font-size: 14px;">Upload images from device:</label>
+            <input type="file" id="product-image-upload" accept=".jpg,.jpeg,.png,.gif,.webp" multiple style="margin-top: 5px;" />
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label style="font-weight: normal; font-size: 14px;">Or enter image URLs (comma-separated):</label>
+            <input type="text" id="product-images" placeholder="url1,url2,url3" style="margin-top: 5px;" />
+          </div>
+          <div id="image-previews" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;"></div>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="product-bestseller" />
+            Mark as Bestseller
+          </label>
+        </div>
+        <button type="submit" class="btn">Save Product</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:8000';
+    let token = localStorage.getItem('adminToken');
+    let uploadedImageUrls = [];
+
+    // Check if logged in
+    if (token) {
+      showDashboard();
+    }
+
+    // Login form
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          token = data.access_token;
+          localStorage.setItem('adminToken', token);
+          showDashboard();
+        } else {
+          document.getElementById('login-error').textContent = data.detail || 'Login failed';
+        }
+      } catch (error) {
+        document.getElementById('login-error').textContent = 'Connection error';
+      }
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('adminToken');
+      token = null;
+      document.getElementById('dashboard-section').classList.add('hidden');
+      document.getElementById('login-section').classList.remove('hidden');
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        document.getElementById('products-tab').classList.add('hidden');
+        document.getElementById('contacts-tab').classList.add('hidden');
+        document.getElementById(`${tab.dataset.tab}-tab`).classList.remove('hidden');
+        
+        if (tab.dataset.tab === 'products') loadProducts();
+        if (tab.dataset.tab === 'contacts') loadContacts();
+      });
+    });
+
+    function showDashboard() {
+      document.getElementById('login-section').classList.add('hidden');
+      document.getElementById('dashboard-section').classList.remove('hidden');
+      loadProducts();
+    }
+
+    async function loadProducts() {
+      document.getElementById('products-loading').classList.remove('hidden');
+      document.getElementById('products-table-container').classList.add('hidden');
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/admin/products`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const products = await response.json();
+          renderProducts(products);
+        } else {
+          alert('Failed to load products');
+        }
+      } catch (error) {
+        alert('Connection error');
+      }
+      
+      document.getElementById('products-loading').classList.add('hidden');
+      document.getElementById('products-table-container').classList.remove('hidden');
+    }
+
+    function renderProducts(products) {
+      const tbody = document.getElementById('products-tbody');
+      tbody.innerHTML = products.map(p => `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.name}</td>
+          <td>${p.material}</td>
+          <td>${p.colour}</td>
+          <td>₹${p.price}</td>
+          <td>${p.gsm || '-'}</td>
+          <td>${p.width || '-'}</td>
+          <td>${p.is_bestseller ? '✓' : ''}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-edit" onclick="editProduct(${p.id})">Edit</button>
+            <button class="btn btn-sm btn-delete" onclick="deleteProduct(${p.id})">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadContacts() {
+      document.getElementById('contacts-loading').classList.remove('hidden');
+      document.getElementById('contacts-table-container').classList.add('hidden');
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/admin/contacts`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const contacts = await response.json();
+          renderContacts(contacts);
+        } else {
+          alert('Failed to load contacts');
+        }
+      } catch (error) {
+        alert('Connection error');
+      }
+      
+      document.getElementById('contacts-loading').classList.add('hidden');
+      document.getElementById('contacts-table-container').classList.remove('hidden');
+    }
+
+    function renderContacts(contacts) {
+      const tbody = document.getElementById('contacts-tbody');
+      tbody.innerHTML = contacts.map(c => `
+        <tr>
+          <td>${c.id}</td>
+          <td>${c.name}</td>
+          <td>${c.email}</td>
+          <td>${c.phone}</td>
+          <td>${c.subject}</td>
+          <td>${new Date(c.created_at).toLocaleDateString()}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Product modal
+    document.getElementById('add-product-btn').addEventListener('click', () => {
+      document.getElementById('modal-title').textContent = 'Add Product';
+      document.getElementById('product-form').reset();
+      document.getElementById('product-id').value = '';
+      uploadedImageUrls = [];
+      updateImagePreviews();
+      document.getElementById('product-modal').classList.add('active');
+    });
+
+    // Image upload handler
+    document.getElementById('product-image-upload').addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
+
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const response = await fetch(`${API_BASE}/api/admin/upload-image`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            uploadedImageUrls.push(data.url);
+            updateImagePreviews();
+          } else {
+            const error = await response.json();
+            alert(`Failed to upload ${file.name}: ${error.detail}`);
+          }
+        } catch (error) {
+          alert(`Error uploading ${file.name}: ${error.message}`);
+        }
+      }
+
+      // Clear the file input
+      e.target.value = '';
+    });
+
+    function updateImagePreviews() {
+      const previewsContainer = document.getElementById('image-previews');
+      previewsContainer.innerHTML = uploadedImageUrls.map((url, index) => `
+        <div style="position: relative;">
+          <img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />
+          <button type="button" onclick="removeImage(${index})" style="position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
+        </div>
+      `).join('');
+    }
+
+    function removeImage(index) {
+      uploadedImageUrls.splice(index, 1);
+      updateImagePreviews();
+    }
+
+    document.getElementById('close-modal').addEventListener('click', () => {
+      document.getElementById('product-modal').classList.remove('active');
+    });
+
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const productId = document.getElementById('product-id').value;
+      
+      // Combine uploaded images with manually entered URLs
+      const manualUrls = document.getElementById('product-images').value.split(',').map(s => s.trim()).filter(s => s);
+      const allImages = [...uploadedImageUrls, ...manualUrls];
+      
+      if (allImages.length === 0) {
+        alert('Please add at least one image (upload or enter URL)');
+        return;
+      }
+      
+      const productData = {
+        name: document.getElementById('product-name').value,
+        description: document.getElementById('product-description').value,
+        price: parseFloat(document.getElementById('product-price').value),
+        material: document.getElementById('product-material').value,
+        colour: document.getElementById('product-colour').value,
+        gsm: document.getElementById('product-gsm').value,
+        width: document.getElementById('product-width').value,
+        images: allImages,
+        is_bestseller: document.getElementById('product-bestseller').checked
+      };
+
+      const url = productId ? `${API_BASE}/api/admin/products/${productId}` : `${API_BASE}/api/admin/products`;
+      const method = productId ? 'PUT' : 'POST';
+
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(productData)
+        });
+
+        if (response.ok) {
+          document.getElementById('product-modal').classList.remove('active');
+          loadProducts();
+        } else {
+          alert('Failed to save product');
+        }
+      } catch (error) {
+        alert('Connection error');
+      }
+    });
+
+    async function editProduct(id) {
+      try {
+        const response = await fetch(`${API_BASE}/api/admin/products/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const product = await response.json();
+          document.getElementById('modal-title').textContent = 'Edit Product';
+          document.getElementById('product-id').value = product.id;
+          document.getElementById('product-name').value = product.name;
+          document.getElementById('product-description').value = product.description;
+          document.getElementById('product-price').value = product.price;
+          document.getElementById('product-material').value = product.material;
+          document.getElementById('product-colour').value = product.colour;
+          document.getElementById('product-gsm').value = product.gsm || '';
+          document.getElementById('product-width').value = product.width || '';
+          document.getElementById('product-images').value = product.images.join(',');
+          uploadedImageUrls = [];
+          updateImagePreviews();
+          document.getElementById('product-bestseller').checked = product.is_bestseller;
+          document.getElementById('product-modal').classList.add('active');
+        }
+      } catch (error) {
+        alert('Connection error');
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Are you sure you want to delete this product?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/admin/products/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          loadProducts();
+        } else {
+          alert('Failed to delete product');
+        }
+      } catch (error) {
+        alert('Connection error');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -62,7 +62,7 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       const grid = document.getElementById("shop-grid");
       const materialFilter = document.getElementById("material-filter");
       const colourFilter = document.getElementById("colour-filter");
@@ -82,29 +82,35 @@
         }
       }
 
-      function filterProducts() {
-        let filtered = [...PRODUCTS];
+      async function filterProducts() {
         const material = materialFilter.value;
         const colour = colourFilter.value;
         const price = priceFilter.value;
 
-        if (material) {
-          filtered = filtered.filter(p => p.material === material);
-        }
-
-        if (colour) {
-          filtered = filtered.filter(p => p.colour === colour);
-        }
-
+        let price_min, price_max;
         if (price === 'low') {
-          filtered = filtered.filter(p => p.price < 400);
+          price_min = 0;
+          price_max = 400;
         } else if (price === 'medium') {
-          filtered = filtered.filter(p => p.price >= 400 && p.price <= 600);
+          price_min = 400;
+          price_max = 600;
         } else if (price === 'high') {
-          filtered = filtered.filter(p => p.price > 600);
+          price_min = 600;
+          price_max = undefined;
         }
 
-        renderProducts(filtered);
+        try {
+          const products = await fetchProducts({
+            material: material || undefined,
+            colour: colour || undefined,
+            price_min,
+            price_max
+          });
+          renderProducts(products);
+        } catch (error) {
+          console.error('Failed to fetch products:', error);
+          grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px;">Failed to load products. Please try again later.</p>';
+        }
       }
 
       materialFilter.addEventListener('change', filterProducts);
@@ -117,7 +123,7 @@
         materialFilter.value = urlParams.get('material');
       }
 
-      renderProducts(PRODUCTS);
+      // Initial load
       filterProducts();
     });
   </script>

@@ -1,3 +1,8 @@
+// Dynamic API URL based on environment
+const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:8000/api'
+    : 'https://skytex-api.onrender.com/api';  // Your Render URL
+
 const SITE_CONFIG = {
   companyName: "Sky Tex Textile Atelier",
   address: "D-3248-49-50, Globle Textile Market, Nr. Globle textile Market, Surat (395010)",

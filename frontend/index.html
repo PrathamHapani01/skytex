@@ -168,5 +168,28 @@
   <script src="js/api.js"></script>
   <script src="js/reviews.js"></script>
   <script src="js/home.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const bestsellersGrid = document.getElementById("bestsellers-grid");
+      
+      if (bestsellersGrid) {
+        try {
+          const bestsellers = await fetchBestsellers();
+          bestsellersGrid.innerHTML = bestsellers.map(product => `
+            <a href="product.html?id=${product.id}" class="product-card" aria-label="View ${product.name}">
+              <img src="${product.images[0]}" alt="${product.name}" class="product-card__img" onerror="this.src='https://via.placeholder.com/400x400/f7f4ef/2c2824?text=Image+Not+Available'" />
+              <div class="product-card__content">
+                <h3>${product.name}</h3>
+                <p class="product-card__price">₹${product.price}/meter</p>
+              </div>
+            </a>
+          `).join('');
+        } catch (error) {
+          console.error('Failed to load bestsellers:', error);
+          bestsellersGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px;">Failed to load products. Please try again later.</p>';
+        }
+      }
+    });
+  </script>
 </body>
 </html>

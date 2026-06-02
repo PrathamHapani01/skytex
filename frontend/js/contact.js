@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     clearErrors();
     let valid = true;
@@ -57,10 +57,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!valid) return;
 
-    form.classList.add("hidden");
-    if (successEl) {
-      successEl.classList.remove("hidden");
-      successEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // Submit to API
+    try {
+      await submitContact({ name, phone, email, subject, message });
+      form.classList.add("hidden");
+      if (successEl) {
+        successEl.classList.remove("hidden");
+        successEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    } catch (error) {
+      console.error('Failed to submit contact form:', error);
+      showError("message", "Failed to submit. Please try again.");
     }
   });
 });
