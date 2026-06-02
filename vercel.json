@@ -1,37 +1,44 @@
 {
   "cleanUrls": true,
+  "builds": [
+    { "src": "frontend/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/frontend/$1" }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://skytex-rutc.onrender.com/api/$1"
+      "destination": "https://skytex-api.onrender.com/api/$1"
     },
     {
       "source": "/shop",
-      "destination": "/shop.html"
+      "destination": "/frontend/shop.html"
     },
     {
       "source": "/about",
-      "destination": "/about.html"
+      "destination": "/frontend/about.html"
     },
     {
       "source": "/contact",
-      "destination": "/contact.html"
+      "destination": "/frontend/contact.html"
     },
     {
       "source": "/collections",
-      "destination": "/collections.html"
+      "destination": "/frontend/collections.html"
     },
     {
       "source": "/swatches",
-      "destination": "/swatches.html"
+      "destination": "/frontend/swatches.html"
     },
     {
       "source": "/admin",
-      "destination": "/admin.html"
+      "destination": "/frontend/admin.html"
     },
     {
       "source": "/product",
-      "destination": "/product.html"
+      "destination": "/frontend/product.html"
     }
   ],
   "headers": [
