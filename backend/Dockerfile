@@ -1,14 +1,17 @@
 FROM python:3.11-slim
 
+# Create a non-root user
+RUN useradd -m -u 1000 appuser
+
 WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+RUN mkdir -p /app/uploads && chown -R appuser:appuser /app
 
-# Create uploads directory (ephemeral on Render)
-RUN mkdir -p /app/uploads
+USER appuser
 
 EXPOSE 8000
 
