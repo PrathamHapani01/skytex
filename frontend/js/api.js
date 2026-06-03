@@ -1,5 +1,5 @@
 // API Configuration - Use API_URL from config.js
-const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://skytex-api.onrender.com/api';
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://skytex-api.onrender.com';
 
 // API Functions
 async function fetchProducts(filters = {}) {
