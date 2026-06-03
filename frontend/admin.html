@@ -206,9 +206,15 @@
     const API_ROOT = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://skytex-api.onrender.com';
     const API_ADMIN_BASE = `${API_ROOT}/api/admin`;
 
-    // Helper to convert relative upload URLs to absolute
+    // Helper: ensure any URL is absolute (Cloudinary URLs are already absolute)
     function toAbsoluteImageUrl(url) {
-        if (url && url.startsWith('/uploads/')) {
+        if (!url) return url;
+        // If it's already a full URL (http:// or https://), return as is
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        // Legacy relative /uploads/ URLs (for old products)
+        if (url.startsWith('/uploads/')) {
             return `${API_ROOT}${url}`;
         }
         return url;
@@ -217,7 +223,6 @@
     let token = localStorage.getItem('adminToken');
     let uploadedImageUrls = [];
 
-    // Check if logged in
     if (token) {
       showDashboard();
     }
@@ -358,7 +363,7 @@
       `).join('');
     }
 
-    // Product modal
+    // Product modal – add
     document.getElementById('add-product-btn').addEventListener('click', () => {
       document.getElementById('modal-title').textContent = 'Add Product';
       document.getElementById('product-form').reset();
@@ -368,7 +373,7 @@
       document.getElementById('product-modal').classList.add('active');
     });
 
-    // Image upload handler – convert returned relative URL to absolute
+    // Image upload handler
     document.getElementById('product-image-upload').addEventListener('change', async (e) => {
       const files = Array.from(e.target.files);
       if (files.length === 0) return;
@@ -386,6 +391,7 @@
 
           if (response.ok) {
             const data = await response.json();
+            // data.url is now a full Cloudinary URL (https://...)
             const fullUrl = toAbsoluteImageUrl(data.url);
             uploadedImageUrls.push(fullUrl);
             updateImagePreviews();
@@ -397,7 +403,6 @@
           alert(`Error uploading ${file.name}: ${error.message}`);
         }
       }
-
       e.target.value = '';
     });
 
@@ -424,8 +429,6 @@
       e.preventDefault();
       
       const productId = document.getElementById('product-id').value;
-      
-      // Only uploaded images (no manual URLs)
       const allImages = [...uploadedImageUrls];
       
       if (allImages.length === 0) {
@@ -487,11 +490,8 @@
           document.getElementById('product-gsm').value = product.gsm || '';
           document.getElementById('product-width').value = product.width || '';
           
-          // For editing, existing images are stored as absolute URLs – we cannot edit them here.
-          // We'll just leave the image URLs field empty and rely on uploadedImageUrls.
-          // The current implementation does not allow deleting old images through the UI.
-          // If you need to replace images, delete the product and recreate, or we can add a delete button per image later.
-          uploadedImageUrls = [];
+          // Store existing images (they are full URLs from Cloudinary or legacy)
+          uploadedImageUrls = product.images.map(img => toAbsoluteImageUrl(img));
           updateImagePreviews();
           document.getElementById('product-bestseller').checked = product.is_bestseller;
           document.getElementById('product-modal').classList.add('active');

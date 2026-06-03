@@ -10,15 +10,13 @@ import os
 import uuid
 from pathlib import Path
 
+# Cloudinary imports
+import cloudinary
+import cloudinary.uploader
+
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
-# Configure upload directory
-# WARNING: Render uses ephemeral filesystem — uploads are lost on redeploy.
-# For persistent storage, integrate a cloud provider (S3, Cloudinary, etc.)
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "/app/uploads"))
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
-# Allowed file extensions
+# Allowed file extensions (optional, keep for safety)
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
@@ -155,31 +153,34 @@ async def upload_image(
     file: UploadFile = File(...),
     current_admin: Admin = Depends(get_current_admin)
 ):
-    # Validate file extension
+    # Validate file extension (optional)
     file_ext = Path(file.filename).suffix.lower()
     if file_ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid file type. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
         )
     
-    # Generate unique filename
-    unique_filename = f"{uuid.uuid4()}{file_ext}"
-    file_path = UPLOAD_DIR / unique_filename
+    # Read file content (for size check)
+    contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Max {MAX_FILE_SIZE // (1024*1024)}MB"
+        )
     
-    # Save file
+    # Configure Cloudinary from environment variables
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+        secure=True
+    )
+    
     try:
-        contents = await file.read()
-        if len(contents) > MAX_FILE_SIZE:
-            raise HTTPException(
-                status_code=400,
-                detail=f"File too large. Maximum size is {MAX_FILE_SIZE / (1024*1024)}MB"
-            )
-        
-        with open(file_path, "wb") as f:
-            f.write(contents)
+        # Upload to Cloudinary
+        upload_result = cloudinary.uploader.upload(contents)
+        file_url = upload_result['secure_url']
+        return {"url": file_url}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error saving file: {str(e)}")
-    
-    # Return the URL to access the uploaded file
-    return {"url": f"/uploads/{unique_filename}"}
+        raise HTTPException(status_code=500, detail=f"Cloudinary upload failed: {str(e)}")
