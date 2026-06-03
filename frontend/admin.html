@@ -189,10 +189,6 @@
             <label style="font-weight: normal; font-size: 14px;">Upload images from device:</label>
             <input type="file" id="product-image-upload" accept=".jpg,.jpeg,.png,.gif,.webp" multiple style="margin-top: 5px;" />
           </div>
-          <div style="margin-bottom: 10px;">
-            <label style="font-weight: normal; font-size: 14px;">Or enter image URLs (comma-separated):</label>
-            <input type="text" id="product-images" placeholder="url1,url2,url3" style="margin-top: 5px;" />
-          </div>
           <div id="image-previews" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;"></div>
         </div>
         <div class="form-group">
@@ -390,7 +386,6 @@
 
           if (response.ok) {
             const data = await response.json();
-            // Convert relative /uploads/... to full URL
             const fullUrl = toAbsoluteImageUrl(data.url);
             uploadedImageUrls.push(fullUrl);
             updateImagePreviews();
@@ -403,7 +398,6 @@
         }
       }
 
-      // Clear the file input
       e.target.value = '';
     });
 
@@ -431,15 +425,11 @@
       
       const productId = document.getElementById('product-id').value;
       
-      // Combine uploaded images (already absolute) with manually entered URLs
-      let manualUrls = document.getElementById('product-images').value.split(',').map(s => s.trim()).filter(s => s);
-      // Convert any manual relative URLs to absolute
-      manualUrls = manualUrls.map(url => toAbsoluteImageUrl(url));
-      
-      const allImages = [...uploadedImageUrls, ...manualUrls];
+      // Only uploaded images (no manual URLs)
+      const allImages = [...uploadedImageUrls];
       
       if (allImages.length === 0) {
-        alert('Please add at least one image (upload or enter URL)');
+        alert('Please add at least one image');
         return;
       }
       
@@ -497,10 +487,10 @@
           document.getElementById('product-gsm').value = product.gsm || '';
           document.getElementById('product-width').value = product.width || '';
           
-          // Convert stored image URLs (they may be relative) to absolute for the text field
-          const absoluteImages = product.images.map(url => toAbsoluteImageUrl(url));
-          document.getElementById('product-images').value = absoluteImages.join(',');
-          
+          // For editing, existing images are stored as absolute URLs – we cannot edit them here.
+          // We'll just leave the image URLs field empty and rely on uploadedImageUrls.
+          // The current implementation does not allow deleting old images through the UI.
+          // If you need to replace images, delete the product and recreate, or we can add a delete button per image later.
           uploadedImageUrls = [];
           updateImagePreviews();
           document.getElementById('product-bestseller').checked = product.is_bestseller;
