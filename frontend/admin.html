@@ -210,6 +210,14 @@
     const API_ROOT = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://skytex-api.onrender.com';
     const API_ADMIN_BASE = `${API_ROOT}/api/admin`;
 
+    // Helper to convert relative upload URLs to absolute
+    function toAbsoluteImageUrl(url) {
+        if (url && url.startsWith('/uploads/')) {
+            return `${API_ROOT}${url}`;
+        }
+        return url;
+    }
+
     let token = localStorage.getItem('adminToken');
     let uploadedImageUrls = [];
 
@@ -364,7 +372,7 @@
       document.getElementById('product-modal').classList.add('active');
     });
 
-    // Image upload handler
+    // Image upload handler – convert returned relative URL to absolute
     document.getElementById('product-image-upload').addEventListener('change', async (e) => {
       const files = Array.from(e.target.files);
       if (files.length === 0) return;
@@ -382,7 +390,9 @@
 
           if (response.ok) {
             const data = await response.json();
-            uploadedImageUrls.push(data.url);
+            // Convert relative /uploads/... to full URL
+            const fullUrl = toAbsoluteImageUrl(data.url);
+            uploadedImageUrls.push(fullUrl);
             updateImagePreviews();
           } else {
             const error = await response.json();
@@ -401,7 +411,7 @@
       const previewsContainer = document.getElementById('image-previews');
       previewsContainer.innerHTML = uploadedImageUrls.map((url, index) => `
         <div style="position: relative;">
-          <img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" />
+          <img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;" onerror="this.src='https://placehold.co/80x80/f7f4ef/2c2824?text=Error'" />
           <button type="button" onclick="removeImage(${index})" style="position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
         </div>
       `).join('');
@@ -421,8 +431,11 @@
       
       const productId = document.getElementById('product-id').value;
       
-      // Combine uploaded images with manually entered URLs
-      const manualUrls = document.getElementById('product-images').value.split(',').map(s => s.trim()).filter(s => s);
+      // Combine uploaded images (already absolute) with manually entered URLs
+      let manualUrls = document.getElementById('product-images').value.split(',').map(s => s.trim()).filter(s => s);
+      // Convert any manual relative URLs to absolute
+      manualUrls = manualUrls.map(url => toAbsoluteImageUrl(url));
+      
       const allImages = [...uploadedImageUrls, ...manualUrls];
       
       if (allImages.length === 0) {
@@ -483,7 +496,11 @@
           document.getElementById('product-colour').value = product.colour;
           document.getElementById('product-gsm').value = product.gsm || '';
           document.getElementById('product-width').value = product.width || '';
-          document.getElementById('product-images').value = product.images.join(',');
+          
+          // Convert stored image URLs (they may be relative) to absolute for the text field
+          const absoluteImages = product.images.map(url => toAbsoluteImageUrl(url));
+          document.getElementById('product-images').value = absoluteImages.join(',');
+          
           uploadedImageUrls = [];
           updateImagePreviews();
           document.getElementById('product-bestseller').checked = product.is_bestseller;
