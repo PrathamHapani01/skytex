@@ -54,8 +54,13 @@
         const product = await fetchProduct(productId);
         
         if (product && detailContainer) {
+          // ===== UPDATED SPECS: Material, Colour, Weight (renamed GSM), Width =====
           const specsHtml = `
-            <dt class="spec-label">GSM</dt>
+            <dt class="spec-label">Material</dt>
+            <dd class="spec-value">${product.material || '-'}</dd>
+            <dt class="spec-label">Colour</dt>
+            <dd class="spec-value">${product.colour || '-'}</dd>
+            <dt class="spec-label">Weight</dt>
             <dd class="spec-value">${product.gsm || '-'}</dd>
             <dt class="spec-label">Width</dt>
             <dd class="spec-value">${product.width || '-'}</dd>
@@ -65,12 +70,12 @@
             <div class="product-detail__layout">
               <div class="product-gallery">
                 <div class="gallery-main">
-                  <img id="main-image" src="${product.images[0]}" alt="${product.name}" class="gallery-main__img" onerror="this.src='https://via.placeholder.com/600x600/f7f4ef/2c2824?text=Image+Not+Available'" />
+                  <img id="main-image" src="${product.images[0]}" alt="${product.name}" class="gallery-main__img" onerror="this.src='https://placehold.co/600x600/f7f4ef/2c2824?text=Image+Not+Available'" />
                 </div>
                 <div class="gallery-thumbs">
                   ${product.images.map((img, i) => `
                     <button class="gallery-thumb ${i === 0 ? 'is-active' : ''}" onclick="changeImage('${img}', this)" aria-label="View image ${i + 1}">
-                      <img src="${img}" alt="${product.name} ${i + 1}" onerror="this.src='https://via.placeholder.com/100x100/f7f4ef/2c2824?text=+'" />
+                      <img src="${img}" alt="${product.name} ${i + 1}" onerror="this.src='https://placehold.co/100x100/f7f4ef/2c2824?text=+'" />
                     </button>
                   `).join('')}
                 </div>
@@ -102,7 +107,7 @@
               const relatedProducts = allProducts.filter(p => p.id !== productId).slice(0, 4);
               relatedGrid.innerHTML = relatedProducts.map(p => `
                 <a href="product.html?id=${p.id}" class="product-card" aria-label="View ${p.name}">
-                  <img src="${p.images[0]}" alt="${p.name}" class="product-card__img" onerror="this.src='https://via.placeholder.com/400x400/f7f4ef/2c2824?text=Image+Not+Available'" />
+                  <img src="${p.images[0]}" alt="${p.name}" class="product-card__img" onerror="this.src='https://placehold.co/400x400/f7f4ef/2c2824?text=Image+Not+Available'" />
                   <div class="product-card__content">
                     <h3>${p.name}</h3>
                     <p class="product-card__price">₹${p.price}/meter</p>
